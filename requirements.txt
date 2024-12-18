@@ -1,0 +1,13 @@
+openai
+python-dotenv
+streamlit
+langchain==0.2.10
+langchain_openai==0.1.17
+langchain_core==0.2.23
+langchain_community==0.2.10
+chardet
+chromadb==0.5.7
+streamlit-chat
+audio-recorder-streamlit
+streamlit-float
+pysqlite3-binary

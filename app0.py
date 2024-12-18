@@ -241,15 +241,20 @@ if audio_bytes:
 # 生成 HopeBot 回复
 if st.session_state.messages[-1]["role"] != "assistant":
     with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("Thinking🤔..."):
-            final_response = get_assistant_response(st.session_state.messages)  # Passing session messages to the function
-            st.markdown(
-                f"<p style='font-size: 24px; margin: 0;'>{final_response}</p>",
-                unsafe_allow_html=True
-            )
-        with st.spinner("HopeBot is speaking💬..."):    
-            audio_file = text_to_speech(final_response)
-            autoplay_audio(audio_file)
+        with st.spinner("Thinking 🤔..."):
+            final_response = get_assistant_response(st.session_state.messages)  # 生成文本回复
+
+        with st.spinner("HopeBot is speaking 💬..."):
+            audio_file = text_to_speech(final_response)  # 提前生成语音
+
+        # 同时显示文本和播放音频
+        st.markdown(
+            f"<p style='font-size: 24px; margin: 0;'>{final_response}</p>",
+            unsafe_allow_html=True
+        )
+        autoplay_audio(audio_file)  # 播放音频
+
+        # 添加回复到会话状态
         st.session_state.messages.append({"role": "assistant", "content": final_response})
         os.remove(audio_file)
 

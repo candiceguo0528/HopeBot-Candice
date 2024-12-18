@@ -78,7 +78,7 @@ def initialize_resources():
     You need to complete three tasks in turn:
     Task 1: As a professional counsellor, you should begin by greeting the client warmly and start a casual conversation asking about their current situation. Do not exceed 20 rounds of dialogue in this task and transition to introducing the PHQ-9 when appropriate, if the user states twice or more that they have nothing to share or when the dialogue up to 20 rounds, you must ask the user if they would like to take the PHQ-9 test and give a brief introduction to the PHQ-9, communicating that this can be seen as a tool to help understand their feelings and offer support.
     
-    Task 2: After the user agrees to use the PHQ-9, ask each question in turn. Accurately categorise the user's answers as options A, B, C or D. If the user's answer is not precise enough, ambiguous or cannot be accurately categorised, ask the user to provide a clearer answer to ensure that the most accurate answer is collected. If the user answers A, they get 0 points; B, 1 point; C, 2 points; and D, 3 points. Track the score cumulatively without displaying it, and move to Task 3 after completing the test.
+    Task 2: After the user agrees to use the PHQ-9, ask each question in turn. Accurately categorise the user's answers as options A, B, C or D. If the user's answer is not precise enough, ambiguous or cannot be accurately categorised, you must ask the user to provide a clearer answer to ensure that the most accurate answer is collected. If the user answers A, they get 0 points; B, 1 point; C, 2 points; and D, 3 points. Track the score cumulatively without displaying it, and move to Task 3 after completing the test.
     
     Task 3: You must first tell the user of their answer distribution. In the format: Here’s how each answer was interpreted: Question 1: X (X point), etc. Then sum each question's mark up, and tell the user of their total score in number on the PHQ-9. In the format: You scored X points. And provide the appropriate depression severity results. Provide appropriate advice based on the results. If the depression is severe, give your advice and also encourage the user to seek professional help and provide them with a UK telephone helpline or email address (no more than 2 contacts). Be sure to make it clear that you are a virtual mental health assistant, not a doctor, and that whilst you will offer help, you are not a substitute for professional medical advice.
     At the end you will need to provide a brief summary of your conversation, including the confusion raised by the user in Task 1, as well as their PHQ-9 test results, and your corresponding recommendations. You need to ask the user if they have any further questions about the result and answer them.
@@ -210,11 +210,11 @@ def autoplay_audio(file_path):
 float_init()
 footer_container = st.container()
 with footer_container:
-    audio_bytes = audio_recorder(energy_threshold=(-1, 0.5), pause_threshold=5.0, sample_rate=16000)
+    audio_bytes = audio_recorder(energy_threshold=(-1, 0.5), pause_threshold=3.0, sample_rate=30000)
 
 # 显示聊天历史（使用气泡样式和头像）
 for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar="🤖" if message["role"] == "assistant" else "👤"):
+    with st.chat_message(message["role"], avatar="🤖" if message["role"] == "assistant" else "🤗"):
         st.markdown(
             f"<p style='font-size: 24px; margin: 0;'>{message['content']}</p>",
             unsafe_allow_html=True
@@ -231,7 +231,7 @@ if audio_bytes:
         if transcript:
             # 添加用户消息
             st.session_state.messages.append({"role": "user", "content": transcript})
-            with st.chat_message("user", avatar="👤"):
+            with st.chat_message("user", avatar="🤗"):
                 st.markdown(
                     f"<p style='font-size: 24px; margin: 0;'>{transcript}</p>",
                     unsafe_allow_html=True

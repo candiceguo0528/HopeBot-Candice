@@ -210,7 +210,7 @@ def autoplay_audio(file_path):
 float_init()
 footer_container = st.container()
 with footer_container:
-    audio_bytes = audio_recorder(energy_threshold=(-1, 0.5), pause_threshold=8.0, sample_rate=30000, noise_suppression=True)
+    audio_bytes = audio_recorder(energy_threshold=(-1, 0.5), pause_threshold=8.0, sample_rate=30000)
 
 MESSAGE_STYLE = "<p style='font-size: 24px; margin: 0; line-height: 1.5;'>{}</p>"
 # 显示聊天历史（使用气泡样式和头像）

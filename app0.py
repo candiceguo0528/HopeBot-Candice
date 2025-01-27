@@ -205,19 +205,17 @@ def autoplay_audio(file_path):
         unsafe_allow_html=True,
     )
 
-
 # 浮动容器（用于麦克风）
 float_init()
 footer_container = st.container()
 with footer_container:
-    audio_bytes = audio_recorder(energy_threshold=(-1, 0.5), pause_threshold=8.0, sample_rate=30000)
+    audio_bytes = audio_recorder(energy_threshold=(-1, 1), pause_threshold=30, sample_rate = 41_000)
 
-MESSAGE_STYLE = "<p style='font-size: 24px; margin: 0; line-height: 1.5;'>{}</p>"
 # 显示聊天历史（使用气泡样式和头像）
 for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar="🤖" if message["role"] == "assistant" else "🤗"):
         st.markdown(
-            MESSAGE_STYLE.format(message['content']),
+            f"<p style='font-size: 24px; margin: 0;'>{message['content']}</p>",
             unsafe_allow_html=True
         )
 
@@ -234,7 +232,7 @@ if audio_bytes:
             st.session_state.messages.append({"role": "user", "content": transcript})
             with st.chat_message("user", avatar="🤗"):
                 st.markdown(
-                    MESSAGE_STYLE.format(message['content']),
+                    f"<p style='font-size: 24px; margin: 0;'>{transcript}</p>",
                     unsafe_allow_html=True
                 )
             os.remove(audio_path)
@@ -250,10 +248,10 @@ if st.session_state.messages[-1]["role"] != "assistant":
 
         # 同时显示文本和播放音频
         st.markdown(
-            MESSAGE_STYLE.format(message['content']),
+            f"<p style='font-size: 24px; margin: 0;'>{final_response}</p>",
             unsafe_allow_html=True
         )
-        autoplay_audio(audio_file)  # 播放音频
+        autoplay_audio(audio_file)  # 播放音频 
 
         # 添加回复到会话状态
         st.session_state.messages.append({"role": "assistant", "content": final_response})

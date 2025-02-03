@@ -209,7 +209,7 @@ def autoplay_audio(file_path):
 float_init()
 footer_container = st.container()
 with footer_container:
-    audio_bytes = audio_recorder(energy_threshold=(-1, 1), pause_threshold=30, sample_rate = 41_000)
+    audio_bytes = audio_recorder(energy_threshold=(-1, 0.5), pause_threshold=30, sample_rate = 30000)
 
 # 显示聊天历史（使用气泡样式和头像）
 for message in st.session_state.messages:

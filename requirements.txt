@@ -11,3 +11,5 @@ streamlit-chat
 audio-recorder-streamlit
 streamlit-float
 pysqlite3-binary
+streamlit_chat_widget
+streamlit-extras

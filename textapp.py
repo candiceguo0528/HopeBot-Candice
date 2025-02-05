@@ -28,6 +28,8 @@ from langchain_community.document_loaders import TextLoader
 import chardet
 import pysqlite3 as sqlite3
 import sys
+from streamlit_chat_widget import chat_input_widget
+from streamlit_extras.bottom_container import bottom
 
 st.set_page_config(page_title="HopeBot: Your Mental Health Assistant", layout="wide")
 sys.modules["sqlite3"] = sqlite3

@@ -181,7 +181,7 @@ if user_input:
             audio_data = None
 
         if audio_data:
-            audio_path = "C:/Users/Bolin/Desktop/Hope/temp_audio.mp3"
+            audio_path = "temp_audio.mp3"
             with open(audio_path, "wb") as f:
                 f.write(bytes(audio_data))
 

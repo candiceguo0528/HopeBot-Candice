@@ -1,4 +1,8 @@
 import streamlit as st
+# Display chat history
+st.set_page_config(page_title="HopeBot", layout="wide")
+import asyncio
+import threading
 import pyttsx3
 from streamlit_chat import message
 import os
@@ -6,15 +10,9 @@ import time
 from audio_recorder_streamlit import audio_recorder
 from streamlit_float import float_init
 import base64
-
-# --------------------------------------------------------------------------------------------------------------------------logic2END
 import openai
 from openai import OpenAI
-import os
 from dotenv import load_dotenv
-import base64
-import streamlit as st
-import openai
 from langchain_community.chat_models import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.messages import HumanMessage, AIMessage

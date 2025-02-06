@@ -1,4 +1,8 @@
 import streamlit as st
+import pyttsx3
+# Display chat history
+st.set_page_config(page_title="HopeBot", layout="wide")
+
 from streamlit_chat import message
 import os
 import time
@@ -130,114 +134,108 @@ def get_assistant_response(messages):
     return response
 
 
+# **异步 TTS 加速**
+async def text_to_speech_async(text):
+    loop = asyncio.get_event_loop()
+    with ThreadPoolExecutor() as pool:
+        response = await loop.run_in_executor(pool, lambda: openai.audio.speech.create(model="tts-1", voice="nova", input=text))
+    return response.content  # 返回音频数据
+
+# **同步调用封装**
 def text_to_speech(text):
-    try:
-        response = openai.audio.speech.create(model="tts-1", voice="nova", input=text)
-        audio_path = "response_audio.mp3"
-        with open(audio_path, "wb") as f:
-            response.stream_to_file(audio_path)
-        return audio_path
-    except Exception as e:
-        st.error(f"Text-to-speech conversion failed: {e}")
-        return None
+    return asyncio.run(text_to_speech_async(text))  # 调用 OpenAI 语音合成并返回数据
 
-def autoplay_audio(file_path):
-    with open(file_path, "rb") as f:
-        data = f.read()
-    b64_audio = base64.b64encode(data).decode("utf-8")
-    st.markdown(f"""<audio autoplay><source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3"></audio>""", unsafe_allow_html=True)
+# **优化 autoplay_audio 直接在 streamlit 播放**
+def autoplay_audio(audio_data):
+    if audio_data:
+        b64_audio = base64.b64encode(audio_data).decode("utf-8")
+        st.audio(f"data:audio/mp3;base64,{b64_audio}", format="audio/mp3", autoplay=True)
 
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "This is HopeBot, your mental health assistant. How can I assist you today? 😊"}]
-
-# Display chat history
-st.title("HopeBot: Your Mental Health Assistant 🤖")
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar="🤖" if message["role"] == "assistant" else "🤗"):
-        st.markdown(f"<p style='font-size: 24px; margin: 0;'>{message['content']}</p>", unsafe_allow_html=True)
-
-# Chat input widget (text & audio)
-with bottom():
+# ------------------------------------------------------------------------------------------------------------------------------------------------logic2END
+from streamlit_extras.stylable_container import stylable_container
+ # Chat input widget (text & audio)
+# with bottom():
+with stylable_container(
+    key="bottom_content",
+    css_styles="""
+        {
+            position: fixed;
+            bottom: 50px;
+        }
+        """,
+):
     user_input = chat_input_widget()
 
-# Handle user input
-if user_input:
-    if "text" in user_input:
-        user_message = user_input['text']
 
-    elif "audioFile" in user_input:
-        audio_data = user_input["audioFile"]
+st.title("HopeBot: Your Mental Health Assistant 🤖")   
+# Float feature initialization
+float_init()
+with st.container(height=600):
+    # Initialize chat history
+    if "messages" not in st.session_state:
+        st.session_state.messages = [{"role": "assistant", "content": "This is HopeBot, your mental health assistant. How can I assist you today? 😊"}]
 
-        # 检查数据类型
-        if isinstance(audio_data, list):
-            if isinstance(audio_data[0], int):
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"], avatar="🤖" if message["role"] == "assistant" else "🧐"):
+            st.write(f"<p style='font-size: 24px; margin: 0;'>{message['content']}</p>", unsafe_allow_html=True)
+
+    # Handle user input
+
+    if user_input:
+        user_message = user_input.get("text", None)
+
+        # 处理语音输入
+        if "audioFile" in user_input:
+            audio_data = user_input["audioFile"]
+            if isinstance(audio_data, list):
                 audio_data = bytes(audio_data)
-            else:
-                audio_data = b"".join(audio_data)
-        elif isinstance(audio_data, bytes):
-            pass
-        else:
-            st.error("未知的音频数据格式！")
-            audio_data = None
+            elif not isinstance(audio_data, bytes):
+                st.error("未知的音频数据格式！")
+                audio_data = None
 
-        if audio_data:
-            audio_path = "temp_audio.mp3"
-            with open(audio_path, "wb") as f:
-                f.write(bytes(audio_data))
-
-            user_message = None  # 先初始化，确保不会出现未定义问题
-            # 语音转文本（确保正确关闭文件）
-            try:
-                response = {}
-                with open(audio_path, "rb") as audio_file:
-                    msg = openai.audio.transcriptions.create(
-                        model="whisper-1", response_format="text",
-                        file=audio_file
-                    )
-                    response['text'] = msg
-                    print(response)
-                    if 'text' in response:
-                        user_message = response['text']
-                    else:
-                        st.warning("未能从语音转录中获取文本。")
-            except Exception as e:
-                st.error(f"语音识别失败: {e}")
-            finally:
-                # 确保文件句柄关闭后再删除文件
-                if os.path.exists(audio_path):
-                    try:
-                        os.remove(audio_path)
-                    except PermissionError:
-                        st.warning("无法立即删除音频文件，稍后会尝试自动清理。")
-
-        else:
-            user_message = None
-
-    else:
-        user_message = None
-
-    # 处理用户消息
-    if user_message:
-        st.session_state.messages.append({"role": "user", "content": user_message})
-        with st.chat_message("user", avatar="🤗"):
-            st.markdown(f"<p style='font-size: 24px; margin: 0;'>{user_message}</p>", unsafe_allow_html=True)
-
-        # 生成 HopeBot 的回复
-        with st.chat_message("assistant", avatar="🤖"):
-            with st.spinner("Thinking 🤔..."):
-                final_response = get_assistant_response(st.session_state.messages)
-
-            st.markdown(f"<p style='font-size: 24px; margin: 0;'>{final_response}</p>", unsafe_allow_html=True)
-            
-            audio_file = text_to_speech(final_response)
-            if audio_file:
-                autoplay_audio(audio_file)
-                # 确保音频播放完毕再删除
+            if audio_data:
+                with open("temp_audio.mp3", "wb") as f:
+                    f.write(audio_data)
+                
                 try:
-                    os.remove(audio_file)
-                except PermissionError:
-                    st.warning("无法立即删除生成的音频文件，稍后会尝试自动清理。")
+                    with open("temp_audio.mp3", "rb") as audio_file:
+                        msg = openai.audio.transcriptions.create(
+                            model="whisper-1", response_format="text",
+                            file=audio_file
+                        )
+                        user_message = msg
+                except Exception as e:
+                    st.error(f"语音识别失败: {e}")
 
-            st.session_state.messages.append({"role": "assistant", "content": final_response})
+        if user_message:
+            st.session_state.messages.append({"role": "user", "content": user_message})
+            with st.chat_message("user", avatar="🧐"):
+                st.markdown(f"<p style='font-size: 24px; margin: 0;'>{user_message}</p>", unsafe_allow_html=True)
+
+            # 生成 HopeBot 的回复
+            with st.chat_message("assistant", avatar="🤖"):
+                with st.spinner("Thinking 🤔..."):
+                    final_response = get_assistant_response(st.session_state.messages)
+
+                # **用 threading 提前加载语音**
+                audio_data_holder = {"data": None}
+
+                def generate_audio():
+                    audio_data_holder["data"] = text_to_speech(final_response)
+
+                thread = threading.Thread(target=generate_audio)
+                thread.start()
+
+                # **给 TTS 一点时间**
+                time.sleep(1)  # 让 TTS 先跑一会儿
+
+                # **先显示文本**
+                st.markdown(f"<p style='font-size: 24px; margin: 0;'>{final_response}</p>", unsafe_allow_html=True)
+
+                # **等待语音线程完成**
+                thread.join()
+
+                # **播放音频**
+                autoplay_audio(audio_data_holder["data"])
+
+                st.session_state.messages.append({"role": "assistant", "content": final_response})  

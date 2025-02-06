@@ -1,6 +1,6 @@
 import streamlit as st
 # Display chat history
-st.set_page_config(page_title="HopeBot", layout="wide")
+# st.set_page_config(page_title="HopeBot", layout="wide")
 import asyncio
 import threading
 import pyttsx3

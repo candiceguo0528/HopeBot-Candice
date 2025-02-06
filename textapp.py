@@ -145,7 +145,7 @@ def text_to_speech(text):
 def autoplay_audio(audio_data):
     if audio_data:
         b64_audio = base64.b64encode(audio_data).decode("utf-8")
-        st.audio(f"data:audio/mp3;base64,{b64_audio}", format="audio/mp3", autoplay=True)
+        st.audio(f"data:audio/mp3;base64,{b64_audio}", format="audio/mp3", sample_rate= 30000, autoplay=True)
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------logic2END
 from streamlit_extras.stylable_container import stylable_container
@@ -197,7 +197,7 @@ with st.container(height=600):
                     with open("temp_audio.mp3", "rb") as audio_file:
                         msg = openai.audio.transcriptions.create(
                             model="whisper-1", response_format="text",
-                            file=audio_file
+                            file=audio_file,temperature=0
                         )
                         user_message = msg
                 except Exception as e:

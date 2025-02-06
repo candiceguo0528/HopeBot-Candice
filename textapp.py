@@ -3,7 +3,7 @@ import streamlit as st
 # st.set_page_config(page_title="HopeBot", layout="wide")
 import asyncio
 import threading
-import pyttsx3
+
 from concurrent.futures import ThreadPoolExecutor
 from streamlit_chat import message
 import os
@@ -161,6 +161,7 @@ with stylable_container(
         """,
 ):
     user_input = chat_input_widget()
+    audio_bytes = audio_recorder(energy_threshold=(-1, 0.5), pause_threshold=30, sample_rate = 30000)
 
 
 st.title("HopeBot: Your Mental Health Assistant 🤖")   

@@ -161,8 +161,7 @@ with stylable_container(
         """,
 ):
     user_input = chat_input_widget()
-    audio_bytes = audio_recorder(energy_threshold=(-1, 0.5), pause_threshold=30, sample_rate = 30000)
-
+    
 
 st.title("HopeBot: Your Mental Health Assistant 🤖")   
 # Float feature initialization

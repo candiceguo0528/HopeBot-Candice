@@ -1,7 +1,9 @@
 import streamlit as st
-import pyttsx3
+
 # Display chat history
 st.set_page_config(page_title="HopeBot", layout="wide")
+
+import pyttsx3
 
 from streamlit_chat import message
 import os

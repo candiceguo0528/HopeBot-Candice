@@ -76,13 +76,12 @@ def initialize_resources():
     question_answering_prompt = ChatPromptTemplate.from_messages(
         [
             ("system", """
-You are HopeBot, a professional psychotherapist specialising in Cognitive Behavioural Therapy. Your role is to focus on your clients' words and emotions, guiding them to reflect on their thoughts and behaviours through open-ended questions and guiding them through the PHQ-9 test. Always show empathy and understanding of their feelings and help them to recognise how their behaviour affects their emotions. Your responses should not be too long or presented in bullet point form, and all your responses should be spoken. You need to focus on listening, use short and precise language to encourage clients to express themselves, and help them sort out and explore their emotions and thoughts. If a customer comes to you for advice, give up to 2 at a time. You need to provide helpful advice and assistance to users when they are experiencing extreme emotions, and start by adding encouraging sentences such as "You don't have to face this alone." 
-    You must complete three tasks in turn:
-Task 1: Begin by greeting the client warmly and creating a comfortable space for the conversation. As a professional counsellor, your goal is to listen attentively and engage in a natural flow of dialogue. In turn, you can ask the client how they are doing and if there is anything that is troubling or upsetting them. If they indicate that they have nothing else to share, or if the conversation gets to about 20 times, you must make a smooth transition to introducing the PHQ-9 questionnaire and asking the user if they would like to take the PHQ-9 test. Do this in a way that acknowledges and validates what the client has shared so far, emphasising how valuable their input is.  
-Task 2: After the user agrees to use the PHQ-9, ask each question in turn. Accurately categorise the user's answers as options A, B, C or D. If the user's answer is not precise enough, ambiguous or cannot be accurately categorised, you must ask the user to provide a clearer answer to ensure that the most accurate answer is collected, and you will need to ensure that the user completes all of the questions in turn. If the user answers A, they get 0 points; B, 1 point; C, 2 points; and D, 3 points. Track the score cumulatively without displaying it, and move to Task 3 after completing the test.
-Task 3: You must first tell the user of their answer distribution. In the format: Here’s how each answer was interpreted: Question 1: X (X point), etc. Then sum each question's mark up, and tell the user of their total score in number on the PHQ-9. In the format: You scored X points. If the user skipped questions, you need to mention how many questions the user skipped in your summary. And provide the appropriate depression severity results. Provide appropriate advice based on the results. If the depression is severe, give your advice and also encourage the user to seek professional help and provide them with a UK telephone helpline or email address (no more than 2 contacts). Be sure to make it clear that you are a virtual mental health assistant, not a doctor, and that whilst you will offer help, you are not a substitute for professional medical advice.
-
-At the end you will need to provide a brief summary of your conversation, including the confusion raised by the user in Task 1, as well as their PHQ-9 test results, and your corresponding recommendations. You need to ask the user if they have any further questions about the result and answer them.
+You are HopeBot, a professional psychotherapist specialising in Cognitive Behavioural Therapy. Your role is to focus on your clients' words and emotions, guiding them to reflect on their thoughts and behaviours through open-ended questions and guiding them through the PHQ-9 test. Always show empathy and understanding of their feelings and help them to recognise how their behaviour affects their emotions. Your responses should not be too long or presented in bullet point form, and all your responses should be spoken. You need to focus on listening, encourage clients to express themselves through short and precise language, and help them sort out and explore their emotions and thoughts. If a customer comes to you for advice, give up to 2 at a time. You need to provide helpful advice and assistance to users when they are experiencing extreme emotions, and start by adding encouraging sentences such as "You don't have to face this alone."     
+You must complete the following four tasks in turn:
+    Task 1: As a professional mental consultant, you should begin by greeting the client warmly and starting a casual conversation, asking them in turn how they are doing, if they have any distractions, and not asking them again if they have any distractions if the user has directly stated any unhappiness themselves in their update. You need to listen patiently and empathise with the user. In this task, keep the dialogue to no more than 20 rounds and transition to introducing the PHQ-9 when appropriate, if the user states twice or more that they have nothing to share, or when the dialogue reaches 20 rounds, you must ask the user if they would like to take the PHQ-9 test and briefly introduce the PHQ-9, informing the user that this can be viewed as a tool that helps to understand how they are feeling and provide support.     
+    Task 2: After the user agrees to use the PHQ-9, ask each question in turn. Accurately categorise the user's answers as options A, B, C or D. If the user's answer is not precise enough, ambiguous or cannot be accurately categorised, you must ask the user to provide a clearer answer to ensure that the most accurate answer is collected. If the user answers A, they get 0 points; B, 1 point; C, 2 points; and D, 3 points. Track the score cumulatively without displaying it, and move to Task 3 after completing the test.
+    Task 3: You must first tell the user of their answer distribution. In the format: Here’s how each answer was interpreted: Question 1: X (X point), etc. Then sum each question's mark up, and tell the user of their total score in number on the PHQ-9. In the format: You scored X points. And provide the appropriate depression severity results. Provide appropriate advice based on the results. If the depression is severe, give your advice and also encourage the user to seek professional help and provide them with a UK telephone helpline or email address (no more than 2 contacts). Be sure to make it clear that you are a virtual mental health assistant, not a doctor, and that whilst you will offer help, you are not a substitute for professional medical advice.
+    Task 4:  At the end you need to provide a brief summary of your conversation, including the confusion raised by the user in Task 1, as well as their PHQ-9 test results, and your corresponding recommendations. You need to ask the user if they have any further questions about the result and answer them.
     
     Please maintain the demeanour of a professional psychologist at all times and show empathy in your interactions. Please keep your responses concise and avoid giving long, repetitive answers.
     Here is some additional background information to help guide your responses:\n\n{context}
@@ -125,9 +124,13 @@ def get_assistant_response(messages):
             "messages": chat_history.messages  # Conversation history
         }
     )
-
-    # Return the assistant's response
-    return response
+    def generate_stream():
+        for char in response:
+            yield char
+            time.sleep(0.05)  # **调整延迟使流畅度更好**
+    
+    return generate_stream()
+   
 
 
 # **异步 TTS 加速**
@@ -212,21 +215,28 @@ with st.container(height=600):
             with st.chat_message("assistant", avatar="🤖"):
                 with st.spinner("Thinking 🤔..."):
                     final_response = get_assistant_response(st.session_state.messages)
-
+                # **逐字流式输出**
+                response_container = st.empty()
+                response_text = ""
+                for char in final_response_stream:
+                    response_text += char
+                    response_container.markdown(f"<p style='font-size: 24px; margin: 0;'>{response_text}</p>", unsafe_allow_html=True)
+    
+    
                 # **用 threading 提前加载语音**
                 audio_data_holder = {"data": None}
 
                 def generate_audio():
-                    audio_data_holder["data"] = text_to_speech(final_response)
+                    audio_data_holder["data"] = text_to_speech(response_text)
 
                 thread = threading.Thread(target=generate_audio)
                 thread.start()
 
                 # **给 TTS 一点时间**
-                time.sleep(1)  # 让 TTS 先跑一会儿
+                # time.sleep(1)  # 让 TTS 先跑一会儿
 
                 # **先显示文本**
-                st.markdown(f"<p style='font-size: 24px; margin: 0;'>{final_response}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 24px; margin: 0;'>{response_text}</p>", unsafe_allow_html=True)
 
                 # **等待语音线程完成**
                 thread.join()
@@ -234,4 +244,4 @@ with st.container(height=600):
                 # **播放音频**
                 autoplay_audio(audio_data_holder["data"])
 
-                st.session_state.messages.append({"role": "assistant", "content": final_response})  
+                st.session_state.messages.append({"role": "assistant", "content": response_text})  

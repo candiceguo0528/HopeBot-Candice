@@ -223,27 +223,11 @@ with st.container(height=600):
                 for char in final_response_stream:
                     response_text += char
                     response_container.markdown(f"<p style='font-size: 24px; margin: 0;'>{response_text}</p>", unsafe_allow_html=True)
+
+                if not st.session_state.messages or st.session_state.messages[-1]["role"] != "assistant":
+                    st.session_state.messages.append({"role": "assistant", "content": response_text})
     
     
-                # **用 threading 提前加载语音**
-                audio_data_holder = {"data": None}
-
-                def generate_audio():
-                    audio_data_holder["data"] = text_to_speech(response_text)
-
-                thread = threading.Thread(target=generate_audio)
-                thread.start()
-
-                # **给 TTS 一点时间**
-                # time.sleep(1)  # 让 TTS 先跑一会儿
-
-                # **先显示文本**
-                st.markdown(f"<p style='font-size: 24px; margin: 0;'>{response_text}</p>", unsafe_allow_html=True)
-
-                # **等待语音线程完成**
-                thread.join()
-
-                # **播放音频**
-                autoplay_audio(audio_data_holder["data"])
-
-                st.session_state.messages.append({"role": "assistant", "content": response_text})  
+               # **Generate and Play TTS**
+                audio_data = text_to_speech(response_text)
+                autoplay_audio(audio_data)

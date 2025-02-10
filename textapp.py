@@ -214,10 +214,12 @@ with st.container(height=600):
             # 生成 HopeBot 的回复
             with st.chat_message("assistant", avatar="🤖"):
                 with st.spinner("Thinking 🤔..."):
-                    final_response = get_assistant_response(st.session_state.messages)
+                    final_response_stream = get_assistant_response(st.session_state.messages)
+
                 # **逐字流式输出**
                 response_container = st.empty()
                 response_text = ""
+                
                 for char in final_response_stream:
                     response_text += char
                     response_container.markdown(f"<p style='font-size: 24px; margin: 0;'>{response_text}</p>", unsafe_allow_html=True)

@@ -169,7 +169,7 @@ with stylable_container(
 st.title("HopeBot: Your Mental Health Assistant 🤖")   
 # Float feature initialization
 float_init()
-with st.container(height=400):
+with st.container(height=500):
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = [{"role": "assistant", "content": "This is HopeBot, your mental health assistant. How can I assist you today? 😊"}]

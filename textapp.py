@@ -134,7 +134,7 @@ def get_assistant_response(messages):
 async def text_to_speech_async(text):
     loop = asyncio.get_event_loop()
     with ThreadPoolExecutor() as pool:
-        response = await loop.run_in_executor(pool, lambda: openai.audio.speech.create(model="tts-1", voice="sage", input=text))
+        response = await loop.run_in_executor(pool, lambda: openai.audio.speech.create(model="tts-1", voice="fable", input=text))
     return response.content  # 返回音频数据
 
 # **同步调用封装**
